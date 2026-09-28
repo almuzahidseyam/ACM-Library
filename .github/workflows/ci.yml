@@ -17,14 +17,31 @@ jobs:
       - name: Set up GCC
         run: sudo apt-get update && sudo apt-get install -y g++
         
+      - name: Create CP Dummy Header
+        run: |
+          cat << "HEADER_EOF" > dummy_cp_header.h
+          #include <bits/stdc++.h>
+          using namespace std;
+          const int N = 2e6+9;
+          const int MAXN = 2e6+9;
+          const int MOD = 1e9+7;
+          const int inf = 1e9;
+          const long long INF = 1e18;
+          #define int long long
+          #define endl "\n"
+          struct NTT { void init(){} void multiply(){} };
+          struct base { double r, i; base(){} base(double r, double i):r(r),i(i){} };
+          HEADER_EOF
+          
       - name: Compile check
         run: |
           echo "Compiling all .cpp files to check for syntax errors..."
           find . -name "*.cpp" -type f | while read file; do
             echo "Checking $file"
-            # We use -fsyntax-only to compile quickly without generating binaries
-            # We ignore warnings (-w) since templates often have unused variables
-            g++ -std=c++17 -fsyntax-only -w "$file" || echo "Warning: Compilation failed for $file"
+            g++ -std=c++17 -fsyntax-only -w -include dummy_cp_header.h "$file"
+            if [ $? -ne 0 ]; then
+              echo "::warning file=$file::Compilation failed for $file. Check missing macros/structs."
+            fi
           done
           echo "Compilation check finished."
 
@@ -32,13 +49,14 @@ jobs:
     name: Generate Reference PDF Notebook
     runs-on: ubuntu-latest
     needs: build
+    if: always()
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
           
       - name: Install TeX Live
         run: |

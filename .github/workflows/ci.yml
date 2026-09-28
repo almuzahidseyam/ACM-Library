@@ -61,15 +61,17 @@ jobs:
       - name: Install TeX Live
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+          sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-xetex fonts-freefont-ttf
           
       - name: Generate LaTeX file
         run: python scripts/generate_pdf.py
         
       - name: Compile LaTeX to PDF
         run: |
-          pdflatex -interaction=nonstopmode notebook.tex || true
-          pdflatex -interaction=nonstopmode notebook.tex || true
+          xelatex -interaction=nonstopmode notebook.tex || true
+          xelatex -interaction=nonstopmode notebook.tex || true
+          xelatex -interaction=nonstopmode notebook.tex || true
+          xelatex -interaction=nonstopmode notebook.tex || true
           
       - name: Upload PDF Artifact
         uses: actions/upload-artifact@v4

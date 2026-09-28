@@ -1,15 +1,17 @@
 import os
-import glob
 import re
 
-# LaTeX template header for a competitive programming notebook
 TEX_HEADER = r'''\documentclass[10pt,landscape,a4paper,twocolumn]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+\usepackage{fontspec}
+\setmainfont{FreeSerif}
+\setsansfont{FreeSans}
+\setmonofont{FreeMono}
+
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{geometry}
 \usepackage{fancyhdr}
+\usepackage{multicol}
 \usepackage{tocloft}
 \usepackage{hyperref}
 
@@ -111,9 +113,6 @@ def main():
                 
                 tex.write(r'\subsection{' + escape_latex(display_name) + '}\n')
                 
-                # Fix paths for LaTeX input (replace backslashes, escape spaces)
-                unix_path = file_path.replace('\\', '/')
-                
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
                         code = f.read()
@@ -121,15 +120,13 @@ def main():
                     with open(file_path, 'r', encoding='latin-1') as f:
                         code = f.read()
                         
-                # Instead of \lstinputlisting which hates spaces in paths on some texlive versions, 
-                # we just embed the code directly.
                 tex.write(r'\begin{lstlisting}[language=C++]' + '\n')
                 tex.write(code + '\n')
                 tex.write(r'\end{lstlisting}' + '\n\n')
                 
         tex.write(TEX_FOOTER)
     
-    print("notebook.tex generated successfully!")
+    print("notebook.tex generated successfully for xelatex!")
 
 if __name__ == '__main__':
     main()

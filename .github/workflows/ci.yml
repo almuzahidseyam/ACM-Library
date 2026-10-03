@@ -12,7 +12,7 @@ jobs:
     name: Compile C++ Templates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Set up GCC
         run: sudo apt-get update && sudo apt-get install -y g++
@@ -23,6 +23,7 @@ jobs:
           #include <bits/stdc++.h>
           using namespace std;
           const int N = 2e6+9;
+          const int MAX = 2e6+9;
           const int MAXN = 2e6+9;
           const int MOD = 1e9+7;
           const int inf = 1e9;
@@ -36,14 +37,16 @@ jobs:
       - name: Compile check
         run: |
           echo "Compiling all .cpp files to check for syntax errors..."
-          find . -name "*.cpp" -type f | while read file; do
+          failures=0
+          while IFS= read -r -d '' file; do
             echo "Checking $file"
-            g++ -std=c++17 -fsyntax-only -w -include dummy_cp_header.h "$file"
-            if [ $? -ne 0 ]; then
-              echo "::warning file=$file::Compilation failed for $file. Check missing macros/structs."
+            if ! g++ -std=c++17 -fsyntax-only -w -include dummy_cp_header.h "$file"; then
+              echo "::error file=$file::Compilation failed for $file."
+              failures=1
             fi
-          done
+          done < <(find . -name "*.cpp" -type f -print0)
           echo "Compilation check finished."
+          exit "$failures"
 
   generate-pdf:
     name: Generate Reference PDF Notebook
@@ -51,10 +54,10 @@ jobs:
     needs: build
     if: always()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
           
